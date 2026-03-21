@@ -1,0 +1,21 @@
+# Binary
+dcp
+
+# Dependencies
+node_modules/
+
+# Build output
+frontend/dist/
+
+# IDE
+.opencode/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/
