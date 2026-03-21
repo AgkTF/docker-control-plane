@@ -30,10 +30,10 @@
 ## Build & Run
 
 Development (builds frontend, runs server):
-  export PATH=$PATH:/tmp/go/bin && go run .
+  go run .
 
 Production build:
-  export PATH=$PATH:/tmp/go/bin && cd frontend && npm run build && cd .. && go build -o dcp .
+  cd frontend && npm run build && cd .. && go build -o dcp .
 
 Run binary:
   ./dcp
@@ -49,5 +49,5 @@ Run binary:
 ## Assumptions
 
 - Node.js and npm are available in the environment
-- Go can be downloaded to /tmp/go for builds
+- Go is installed and available in PATH
 - Port 8080 is available (configurable via PORT env var)

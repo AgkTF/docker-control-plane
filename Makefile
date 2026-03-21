@@ -3,7 +3,6 @@
 # Development: Build frontend and run Go server
 # This builds the frontend and runs the server with embedded files
 dev:
-	export PATH=$$PATH:/tmp/go/bin && \
 	cd frontend && npm run build && \
 	cd .. && \
 	go run .
@@ -11,7 +10,6 @@ dev:
 # Build: Build React frontend, then Go binary with embedded files
 # This creates a single binary that serves the frontend
 build:
-	export PATH=$$PATH:/tmp/go/bin && \
 	cd frontend && npm run build && \
 	cd .. && \
 	go build -o dcp .
