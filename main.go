@@ -1,3 +1,6 @@
+// main.go is at the root level because Go embed cannot use ../ paths
+// to access directories outside the package. The frontend/dist folder
+// must be embedded from a parent or sibling directory.
 package main
 
 import (
