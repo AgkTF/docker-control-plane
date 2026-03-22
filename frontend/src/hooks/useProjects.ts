@@ -6,7 +6,7 @@ export function useProjects() {
   return useQuery({
     queryKey: ['projects'],
     queryFn: listProjects,
-    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
   });
 }
 
