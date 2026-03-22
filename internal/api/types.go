@@ -13,11 +13,28 @@ type APIError struct {
 }
 
 type Project struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Path        string    `json:"path"`
-	ComposeFile string    `json:"compose_file"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID                string    `json:"id"`
+	Name              string    `json:"name"`
+	Path              string    `json:"path"`
+	ComposeFile       string    `json:"compose_file"`
+	HasMissingCompose bool      `json:"has_missing_compose"`
+	CreatedAt         time.Time `json:"created_at"`
+}
+
+type Container struct {
+	ID      string        `json:"id"`
+	Name    string        `json:"name"`
+	Project string        `json:"project"`
+	Service string        `json:"service"`
+	Image   string        `json:"image"`
+	Status  string        `json:"status"`
+	State   string        `json:"state"`
+	Ports   []PortMapping `json:"ports"`
+}
+
+type PortMapping struct {
+	Host      string `json:"host"`
+	Container string `json:"container"`
 }
 
 type CreateProjectRequest struct {

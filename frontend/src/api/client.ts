@@ -1,4 +1,4 @@
-import type { Project, CreateProjectRequest, ValidatePathResponse, APIResponse } from './types';
+import type { Project, Container, CreateProjectRequest, ValidatePathResponse, APIResponse } from './types';
 
 const API_BASE = '/api';
 
@@ -27,10 +27,20 @@ export async function listProjects(): Promise<Project[]> {
   return apiClient<Project[]>('/projects');
 }
 
+export async function getProject(id: string): Promise<Project> {
+  return apiClient<Project>(`/projects/${id}`);
+}
+
 export async function createProject(request: CreateProjectRequest): Promise<Project> {
   return apiClient<Project>('/projects', {
     method: 'POST',
     body: JSON.stringify(request),
+  });
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  await apiClient<void>(`/projects/${id}`, {
+    method: 'DELETE',
   });
 }
 
@@ -41,8 +51,6 @@ export async function validatePath(path: string): Promise<ValidatePathResponse> 
   });
 }
 
-export async function deleteProject(id: string): Promise<void> {
-  await apiClient<void>(`/projects/${id}`, {
-    method: 'DELETE',
-  });
+export async function getContainers(projectId: string): Promise<Container[]> {
+  return apiClient<Container[]>(`/projects/${projectId}/containers`);
 }

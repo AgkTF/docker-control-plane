@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/docker-control-plane/dcp/internal/api"
+	"github.com/docker-control-plane/dcp/internal/docker"
 	"github.com/docker-control-plane/dcp/internal/store"
 )
 
@@ -35,11 +36,18 @@ func main() {
 	}
 	defer dbStore.Close()
 
+	// Initialize Docker client
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		log.Fatalf("Failed to initialize Docker client: %v", err)
+	}
+	defer dockerClient.Close()
+
 	// Setup routes
 	mux := http.NewServeMux()
 
 	// API routes
-	api.SetupRoutes(mux, dbStore)
+	api.SetupRoutes(mux, dbStore, dockerClient)
 
 	// Health check endpoint
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {

@@ -4,18 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker-control-plane/dcp/internal/compose"
+	"github.com/docker-control-plane/dcp/internal/docker"
 	"github.com/docker-control-plane/dcp/internal/store"
 )
 
 type Handler struct {
-	store *store.Store
+	store        *store.Store
+	dockerClient *docker.Client
 }
 
-func NewHandler(store *store.Store) *Handler {
-	return &Handler{store: store}
+func NewHandler(store *store.Store, dockerClient *docker.Client) *Handler {
+	return &Handler{
+		store:        store,
+		dockerClient: dockerClient,
+	}
 }
 
 func (h *Handler) ListProjects(w http.ResponseWriter, r *http.Request) {
@@ -81,10 +88,26 @@ func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetProject(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/api/projects/"):]
 	
-	project, err := h.store.GetProjectByID(id)
+	storeProject, err := h.store.GetProjectByID(id)
 	if err != nil {
 		h.sendError(w, http.StatusNotFound, "PROJECT_NOT_FOUND", "Project not found")
 		return
+	}
+
+	// Check if compose file exists
+	composePath := filepath.Join(storeProject.Path, storeProject.ComposeFile)
+	hasMissingCompose := false
+	if _, err := os.Stat(composePath); os.IsNotExist(err) {
+		hasMissingCompose = true
+	}
+
+	project := Project{
+		ID:                storeProject.ID,
+		Name:              storeProject.Name,
+		Path:              storeProject.Path,
+		ComposeFile:       storeProject.ComposeFile,
+		HasMissingCompose: hasMissingCompose,
+		CreatedAt:         storeProject.CreatedAt,
 	}
 
 	h.sendJSON(w, http.StatusOK, project)
@@ -99,6 +122,60 @@ func (h *Handler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.sendJSON(w, http.StatusOK, map[string]string{"message": "Project deleted"})
+}
+
+func (h *Handler) ListContainers(w http.ResponseWriter, r *http.Request) {
+	// Extract project ID from path: /api/projects/:id/containers
+	path := r.URL.Path
+	// Remove /api/projects/ prefix and /containers suffix
+	if !strings.HasSuffix(path, "/containers") {
+		h.sendError(w, http.StatusBadRequest, "INVALID_PATH", "Invalid path")
+		return
+	}
+	
+	id := path[len("/api/projects/") : len(path)-len("/containers")]
+	
+	// Get project details
+	project, err := h.store.GetProjectByID(id)
+	if err != nil {
+		h.sendError(w, http.StatusNotFound, "PROJECT_NOT_FOUND", "Project not found")
+		return
+	}
+
+	// Get containers for this project from Docker
+	containers, err := h.dockerClient.ListContainersByProject(r.Context(), project.Name)
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, "DOCKER_ERROR", fmt.Sprintf("Failed to list containers: %v", err))
+		return
+	}
+
+	// Convert to API types
+	result := make([]Container, len(containers))
+	for i, c := range containers {
+		result[i] = Container{
+			ID:      c.ID,
+			Name:    c.Name,
+			Project: c.Project,
+			Service: c.Service,
+			Image:   c.Image,
+			Status:  c.Status,
+			State:   c.State,
+			Ports:   convertPortMappings(c.Ports),
+		}
+	}
+
+	h.sendJSON(w, http.StatusOK, result)
+}
+
+func convertPortMappings(ports []docker.PortMapping) []PortMapping {
+	result := make([]PortMapping, len(ports))
+	for i, p := range ports {
+		result[i] = PortMapping{
+			Host:      p.Host,
+			Container: p.Container,
+		}
+	}
+	return result
 }
 
 func (h *Handler) ValidatePath(w http.ResponseWriter, r *http.Request) {

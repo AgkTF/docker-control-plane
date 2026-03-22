@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/docker-control-plane/dcp/internal/docker"
 	"github.com/docker-control-plane/dcp/internal/store"
 )
 
-func SetupRoutes(mux *http.ServeMux, store *store.Store) {
-	handler := NewHandler(store)
+func SetupRoutes(mux *http.ServeMux, store *store.Store, dockerClient *docker.Client) {
+	handler := NewHandler(store, dockerClient)
 
 	mux.HandleFunc("/api/projects", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -34,8 +35,14 @@ func SetupRoutes(mux *http.ServeMux, store *store.Store) {
 			return
 		}
 
-		// Handle specific project endpoints
-		if strings.HasPrefix(path, "/api/projects/") {
+		// Handle /api/projects/:id/containers endpoint
+		if strings.HasSuffix(path, "/containers") && r.Method == http.MethodGet {
+			handler.ListContainers(w, r)
+			return
+		}
+
+		// Handle specific project endpoints (GET /api/projects/:id, DELETE /api/projects/:id)
+		if strings.HasPrefix(path, "/api/projects/") && !strings.Contains(path[len("/api/projects/"):], "/") {
 			switch r.Method {
 			case http.MethodGet:
 				handler.GetProject(w, r)

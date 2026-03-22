@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, FolderOpen } from 'lucide-react';
+import { Plus, FolderOpen, Eye } from 'lucide-react';
 import {
   useProjects,
   useCreateProject,
@@ -9,7 +9,11 @@ import { ProjectCard } from '../components/ProjectCard';
 import { AddProjectModal } from '../components/AddProjectModal';
 import { ToastContainer, type Toast } from '../components/Toast';
 
-export function ProjectsPage() {
+interface ProjectsPageProps {
+  onProjectSelect?: (projectId: string) => void;
+}
+
+export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -48,6 +52,12 @@ export function ProjectsPage() {
       const message =
         err instanceof Error ? err.message : 'Failed to remove project';
       addToast('error', message);
+    }
+  };
+
+  const handleViewProject = (id: string) => {
+    if (onProjectSelect) {
+      onProjectSelect(id);
     }
   };
 
@@ -97,11 +107,21 @@ export function ProjectsPage() {
         ) : projects && projects.length > 0 ? (
           <div className="grid gap-4">
             {projects.map(project => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onRemove={handleRemoveProject}
-              />
+              <div key={project.id} className="bg-white border border-gray-200 rounded-lg p-4 dark:border-slate-700 dark:bg-slate-900">
+                <ProjectCard
+                  project={project}
+                  onRemove={handleRemoveProject}
+                />
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => handleViewProject(project.id)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
+                  >
+                    <Eye className="w-4 h-4" />
+                    View Containers
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         ) : (

@@ -3,7 +3,24 @@ export interface Project {
   name: string;
   path: string;
   compose_file: string;
+  has_missing_compose: boolean;
   created_at: string;
+}
+
+export interface Container {
+  id: string;
+  name: string;
+  project: string;
+  service: string;
+  image: string;
+  status: string;
+  state: string;
+  ports: PortMapping[];
+}
+
+export interface PortMapping {
+  host: string;
+  container: string;
 }
 
 export interface CreateProjectRequest {
