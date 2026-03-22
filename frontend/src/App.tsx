@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ProjectsPage } from './components/ProjectsPage';
+import { ProjectsPage } from './pages/ProjectsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
