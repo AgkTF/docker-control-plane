@@ -25,6 +25,8 @@ func main() {
 		port = "8080"
 	}
 
+	devMode := os.Getenv("DEV_MODE") == "true"
+
 	// Initialize database
 	dbPath := getDBPath()
 	dbStore, err := store.New(dbPath)
@@ -33,18 +35,12 @@ func main() {
 	}
 	defer dbStore.Close()
 
-	// Get the frontend/dist subdirectory from embedded filesystem
-	distFS, err := fs.Sub(frontendFS, "frontend/dist")
-	if err != nil {
-		log.Fatalf("Failed to create sub filesystem: %v", err)
-	}
-
 	// Setup routes
 	mux := http.NewServeMux()
-	
+
 	// API routes
 	api.SetupRoutes(mux, dbStore)
-	
+
 	// Health check endpoint
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -52,15 +48,50 @@ func main() {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// Serve static files
-	fs := http.FileServer(http.FS(distFS))
-	mux.Handle("/", fs)
+	// Only serve static files in production mode
+	if !devMode {
+		distFS, err := fs.Sub(frontendFS, "frontend/dist")
+		if err != nil {
+			log.Fatalf("Failed to create sub filesystem: %v", err)
+		}
+		fs := http.FileServer(http.FS(distFS))
+		mux.Handle("/", fs)
+		fmt.Printf("Production server starting on http://localhost:%s\n", port)
+	} else {
+		fmt.Printf("Development server starting on http://localhost:%s\n", port)
+		fmt.Println("Frontend should be running separately on http://localhost:5173")
+	}
+
+	var handler http.Handler = mux
+
+	// Add CORS middleware in development mode
+	if devMode {
+		handler = corsMiddleware(mux)
+	}
 
 	addr := ":" + port
-	fmt.Printf("Server starting on http://localhost%s\n", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
+}
+
+// corsMiddleware adds CORS headers for development
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Allow frontend dev server
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// Handle preflight requests
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func getDBPath() string {
@@ -69,11 +100,11 @@ func getDBPath() string {
 	if err != nil {
 		return "dcp.db"
 	}
-	
+
 	dataDir := filepath.Join(homeDir, ".local", "share", "dcp")
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return "dcp.db"
 	}
-	
+
 	return filepath.Join(dataDir, "dcp.db")
 }
