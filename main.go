@@ -11,8 +11,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker-control-plane/dcp/internal/api"
+	"github.com/docker-control-plane/dcp/internal/config"
 	"github.com/docker-control-plane/dcp/internal/docker"
 	"github.com/docker-control-plane/dcp/internal/store"
 )
@@ -21,9 +23,10 @@ import (
 var frontendFS embed.FS
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	// Load configuration
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
 	devMode := os.Getenv("DEV_MODE") == "true"
@@ -53,7 +56,7 @@ func main() {
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
+		w.Write([]byte(`{"data":{"status":"ok"},"error":null}`))
 	})
 
 	// Only serve static files in production mode
@@ -63,11 +66,21 @@ func main() {
 			log.Fatalf("Failed to create sub filesystem: %v", err)
 		}
 		fs := http.FileServer(http.FS(distFS))
-		mux.Handle("/", fs)
-		fmt.Printf("Production server starting on http://localhost:%s\n", port)
-	} else {
-		fmt.Printf("Development server starting on http://localhost:%s\n", port)
-		fmt.Println("Frontend should be running separately on http://localhost:5173")
+		
+		// Handle root and other non-API routes
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			// Check if this is an API route that wasn't handled
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				// Return 404 for unmatched API routes
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte(`{"data":null,"error":{"code":"NOT_FOUND","message":"Endpoint not found"}}`))
+				return
+			}
+			
+			// Otherwise serve the SPA
+			fs.ServeHTTP(w, r)
+		})
 	}
 
 	var handler http.Handler = mux
@@ -77,7 +90,16 @@ func main() {
 		handler = corsMiddleware(mux)
 	}
 
-	addr := ":" + port
+	addr := cfg.GetAddress()
+	url := cfg.GetServerURL()
+	
+	if devMode {
+		fmt.Printf("Development server starting on %s\n", url)
+		fmt.Println("Frontend should be running separately on http://localhost:5173")
+	} else {
+		fmt.Printf("Production server starting on %s\n", url)
+	}
+
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}

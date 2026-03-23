@@ -10,8 +10,8 @@ export function useProject(projectId: string) {
   return useQuery<Project, Error>({
     queryKey: [projectsKey, projectId],
     queryFn: () => getProject(projectId),
-    refetchInterval: 10_000, // Poll every 10 seconds
-    refetchOnWindowFocus: false,
+    refetchInterval: 5000, // Poll every 5 seconds
+    refetchIntervalInBackground: false, // Pause polling when window is not visible
   });
 }
 
@@ -19,8 +19,8 @@ export function useContainers(projectId: string) {
   return useQuery<Container[], Error>({
     queryKey: [containersKey, projectId],
     queryFn: () => getContainers(projectId),
-    refetchInterval: 3000, // Poll every 3 seconds
-    refetchOnWindowFocus: false,
+    refetchInterval: 2000, // Poll every 2 seconds
+    refetchIntervalInBackground: false, // Pause polling when window is not visible
   });
 }
 
