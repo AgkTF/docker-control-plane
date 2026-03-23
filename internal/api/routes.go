@@ -24,7 +24,7 @@ func SetupRoutes(mux *http.ServeMux, store *store.Store, dockerClient *docker.Cl
 
 	mux.HandleFunc("/api/projects/", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
-		
+
 		// Handle /api/projects/validate endpoint
 		if path == "/api/projects/validate" {
 			if r.Method == http.MethodPost {
@@ -51,6 +51,31 @@ func SetupRoutes(mux *http.ServeMux, store *store.Store, dockerClient *docker.Cl
 			default:
 				w.WriteHeader(http.StatusMethodNotAllowed)
 			}
+			return
+		}
+
+		w.WriteHeader(http.StatusNotFound)
+	})
+
+	// Container action endpoints
+	mux.HandleFunc("/api/containers/", func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		// Handle /api/containers/:id/start
+		if strings.HasSuffix(path, "/start") && r.Method == http.MethodPost {
+			handler.StartContainer(w, r)
+			return
+		}
+
+		// Handle /api/containers/:id/stop
+		if strings.HasSuffix(path, "/stop") && r.Method == http.MethodPost {
+			handler.StopContainer(w, r)
+			return
+		}
+
+		// Handle /api/containers/:id/restart
+		if strings.HasSuffix(path, "/restart") && r.Method == http.MethodPost {
+			handler.RestartContainer(w, r)
 			return
 		}
 

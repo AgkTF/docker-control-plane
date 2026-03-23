@@ -1,7 +1,12 @@
+import { Play, Square, RotateCw } from 'lucide-react';
 import type { Container } from '../../api/types';
 
 interface ContainerTableProps {
   containers: Container[];
+  onStart: (id: string) => void;
+  onStop: (id: string) => void;
+  onRestart: (id: string) => void;
+  isActionPending: boolean;
 }
 
 function StatusDot({ state }: { state: string }) {
@@ -32,7 +37,7 @@ function formatPorts(ports: Container['ports']): string {
     .join(', ');
 }
 
-export function ContainerTable({ containers }: ContainerTableProps) {
+export function ContainerTable({ containers, onStart, onStop, onRestart, isActionPending }: ContainerTableProps) {
   if (containers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
@@ -65,6 +70,9 @@ export function ContainerTable({ containers }: ContainerTableProps) {
             </th>
             <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
               State
+            </th>
+            <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
+              Actions
             </th>
           </tr>
         </thead>
@@ -101,6 +109,53 @@ export function ContainerTable({ containers }: ContainerTableProps) {
                 >
                   {container.state}
                 </span>
+              </td>
+              <td className="py-3 px-4">
+                <div className="flex items-center gap-1">
+                  {container.state === 'running' ? (
+                    <>
+                      <button
+                        onClick={() => onStop(container.id)}
+                        disabled={isActionPending}
+                        className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/20"
+                        title="Stop container"
+                        aria-label="Stop container"
+                      >
+                        <Square className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onRestart(container.id)}
+                        disabled={isActionPending}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20"
+                        title="Restart container"
+                        aria-label="Restart container"
+                      >
+                        <RotateCw className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => onStart(container.id)}
+                        disabled={isActionPending}
+                        className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-green-400 dark:hover:bg-green-900/20"
+                        title="Start container"
+                        aria-label="Start container"
+                      >
+                        <Play className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onRestart(container.id)}
+                        disabled={isActionPending}
+                        className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20"
+                        title="Restart container"
+                        aria-label="Restart container"
+                      >
+                        <RotateCw className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

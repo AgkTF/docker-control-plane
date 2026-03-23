@@ -54,3 +54,21 @@ export async function validatePath(path: string): Promise<ValidatePathResponse> 
 export async function getContainers(projectId: string): Promise<Container[]> {
   return apiClient<Container[]>(`/projects/${projectId}/containers`);
 }
+
+export async function startContainer(id: string): Promise<void> {
+  await apiClient<void>(`/containers/${id}/start`, {
+    method: 'POST',
+  });
+}
+
+export async function stopContainer(id: string): Promise<void> {
+  await apiClient<void>(`/containers/${id}/stop`, {
+    method: 'POST',
+  });
+}
+
+export async function restartContainer(id: string): Promise<void> {
+  await apiClient<void>(`/containers/${id}/restart`, {
+    method: 'POST',
+  });
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, FolderOpen, Trash2, AlertTriangle } from 'lucide-react';
-import { useProject, useContainers, useDeleteProject } from '../hooks/useContainers';
+import { useProject, useContainers, useDeleteProject, useStartContainer, useStopContainer, useRestartContainer } from '../hooks/useContainers';
 import { ContainerTable } from '../components/containers/ContainerTable';
 import { ToastContainer, type Toast } from '../components/Toast';
 
@@ -16,6 +16,9 @@ export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps)
   const { data: project, isLoading: projectLoading, error: projectError } = useProject(projectId);
   const { data: containers, isLoading: containersLoading } = useContainers(projectId);
   const deleteProject = useDeleteProject();
+  const startContainer = useStartContainer(projectId);
+  const stopContainer = useStopContainer(projectId);
+  const restartContainer = useRestartContainer(projectId);
 
   const addToast = (type: Toast['type'], message: string) => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -37,6 +40,38 @@ export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps)
       addToast('error', message);
     }
   };
+
+  const handleStartContainer = async (containerId: string) => {
+    try {
+      await startContainer.mutateAsync(containerId);
+      addToast('success', 'Container started successfully');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to start container';
+      addToast('error', message);
+    }
+  };
+
+  const handleStopContainer = async (containerId: string) => {
+    try {
+      await stopContainer.mutateAsync(containerId);
+      addToast('success', 'Container stopped successfully');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to stop container';
+      addToast('error', message);
+    }
+  };
+
+  const handleRestartContainer = async (containerId: string) => {
+    try {
+      await restartContainer.mutateAsync(containerId);
+      addToast('success', 'Container restarted successfully');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to restart container';
+      addToast('error', message);
+    }
+  };
+
+  const isActionPending = startContainer.isPending || stopContainer.isPending || restartContainer.isPending;
 
   if (projectLoading) {
     return (
@@ -158,7 +193,13 @@ export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps)
                 Loading containers...
               </div>
             ) : (
-              <ContainerTable containers={containers ?? []} />
+              <ContainerTable 
+                containers={containers ?? []} 
+                onStart={handleStartContainer}
+                onStop={handleStopContainer}
+                onRestart={handleRestartContainer}
+                isActionPending={isActionPending}
+              />
             )}
           </div>
         </div>

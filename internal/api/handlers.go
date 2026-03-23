@@ -87,7 +87,7 @@ func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetProject(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/api/projects/"):]
-	
+
 	storeProject, err := h.store.GetProjectByID(id)
 	if err != nil {
 		h.sendError(w, http.StatusNotFound, "PROJECT_NOT_FOUND", "Project not found")
@@ -115,7 +115,7 @@ func (h *Handler) GetProject(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/api/projects/"):]
-	
+
 	if err := h.store.DeleteProject(id); err != nil {
 		h.sendError(w, http.StatusNotFound, "PROJECT_NOT_FOUND", "Project not found")
 		return
@@ -132,9 +132,9 @@ func (h *Handler) ListContainers(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusBadRequest, "INVALID_PATH", "Invalid path")
 		return
 	}
-	
+
 	id := path[len("/api/projects/") : len(path)-len("/containers")]
-	
+
 	// Get project details
 	project, err := h.store.GetProjectByID(id)
 	if err != nil {
@@ -229,6 +229,63 @@ func (h *Handler) ValidatePath(w http.ResponseWriter, r *http.Request) {
 		Name:        name,
 	}
 	h.sendJSON(w, http.StatusOK, resp)
+}
+
+func (h *Handler) StartContainer(w http.ResponseWriter, r *http.Request) {
+	// Extract container ID from path: /api/containers/:id/start
+	path := r.URL.Path
+	if !strings.HasSuffix(path, "/start") {
+		h.sendError(w, http.StatusBadRequest, "INVALID_PATH", "Invalid path")
+		return
+	}
+
+	id := path[len("/api/containers/") : len(path)-len("/start")]
+
+	err := h.dockerClient.StartContainer(r.Context(), id)
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, "DOCKER_ERROR", fmt.Sprintf("Failed to start container: %v", err))
+		return
+	}
+
+	h.sendJSON(w, http.StatusOK, map[string]string{"message": "Container started"})
+}
+
+func (h *Handler) StopContainer(w http.ResponseWriter, r *http.Request) {
+	// Extract container ID from path: /api/containers/:id/stop
+	path := r.URL.Path
+	if !strings.HasSuffix(path, "/stop") {
+		h.sendError(w, http.StatusBadRequest, "INVALID_PATH", "Invalid path")
+		return
+	}
+
+	id := path[len("/api/containers/") : len(path)-len("/stop")]
+
+	err := h.dockerClient.StopContainer(r.Context(), id)
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, "DOCKER_ERROR", fmt.Sprintf("Failed to stop container: %v", err))
+		return
+	}
+
+	h.sendJSON(w, http.StatusOK, map[string]string{"message": "Container stopped"})
+}
+
+func (h *Handler) RestartContainer(w http.ResponseWriter, r *http.Request) {
+	// Extract container ID from path: /api/containers/:id/restart
+	path := r.URL.Path
+	if !strings.HasSuffix(path, "/restart") {
+		h.sendError(w, http.StatusBadRequest, "INVALID_PATH", "Invalid path")
+		return
+	}
+
+	id := path[len("/api/containers/") : len(path)-len("/restart")]
+
+	err := h.dockerClient.RestartContainer(r.Context(), id)
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, "DOCKER_ERROR", fmt.Sprintf("Failed to restart container: %v", err))
+		return
+	}
+
+	h.sendJSON(w, http.StatusOK, map[string]string{"message": "Container restarted"})
 }
 
 func (h *Handler) sendJSON(w http.ResponseWriter, status int, data interface{}) {
