@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { ProjectDetailPage } from './pages/ProjectDetailPage';
 
@@ -30,6 +31,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Toaster richColors />
       {route.type === 'projects' ? (
         <ProjectsPage onProjectSelect={navigateToProject} />
       ) : (
