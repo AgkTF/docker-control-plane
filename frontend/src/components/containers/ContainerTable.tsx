@@ -1,5 +1,5 @@
-import { Play, Square, RotateCw } from "lucide-react";
-import type { Container } from "../../api/types";
+import { Play, Square, RotateCw } from 'lucide-react';
+import type { Container } from '../../api/types';
 import {
   Table,
   TableBody,
@@ -7,9 +7,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+} from '../ui/table';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 
 interface ContainerTableProps {
   containers: Container[];
@@ -22,39 +22,39 @@ interface ContainerTableProps {
 function StatusDot({ state }: { state: string }) {
   const getStatusColor = () => {
     switch (state) {
-      case "running":
-        return "bg-emerald-500";
-      case "paused":
-        return "bg-amber-500";
-      case "exited":
-      case "dead":
-        return "bg-slate-500";
+      case 'running':
+        return 'bg-emerald-500';
+      case 'paused':
+        return 'bg-amber-500';
+      case 'exited':
+      case 'dead':
+        return 'bg-slate-500';
       default:
-        return "bg-red-500";
+        return 'bg-red-500';
     }
   };
 
   return <div className={`w-2 h-2 rounded-full ${getStatusColor()}`} />;
 }
 
-function getStateBadgeVariant(state: string): "success" | "warning" | "muted" {
+function getStateBadgeVariant(state: string): 'success' | 'warning' | 'muted' {
   switch (state) {
-    case "running":
-      return "success";
-    case "paused":
-      return "warning";
-    case "exited":
-    case "dead":
-      return "muted";
+    case 'running':
+      return 'success';
+    case 'paused':
+      return 'warning';
+    case 'exited':
+    case 'dead':
+      return 'muted';
     default:
-      return "muted";
+      return 'muted';
   }
 }
 
-function formatPorts(ports: Container["ports"]): string {
-  if (ports.length === 0) return "-";
+function formatPorts(ports: Container['ports']): string {
+  if (ports.length === 0) return '-';
 
-  return ports.map((p) => `${p.host}:${p.container}`).join(", ");
+  return ports.map(p => `${p.host}:${p.container}`).join(', ');
 }
 
 export function ContainerTable({
@@ -88,7 +88,7 @@ export function ContainerTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {containers.map((container) => (
+        {containers.map(container => (
           <TableRow key={container.id}>
             <TableCell>
               <StatusDot state={container.state} />
@@ -108,7 +108,7 @@ export function ContainerTable({
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
-                {container.state === "running" ? (
+                {container.state === 'running' ? (
                   <>
                     <Button
                       variant="ghost"

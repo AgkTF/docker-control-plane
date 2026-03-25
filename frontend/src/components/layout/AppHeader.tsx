@@ -1,20 +1,24 @@
-import { Sun, Moon, Monitor } from "lucide-react";
-import { useThemeToggle } from "../../contexts/ThemeContext";
-import { Button } from "../ui/button";
+import { Sun, Moon, Monitor } from 'lucide-react';
+import { useThemeToggle } from '../../contexts/ThemeContext';
+import { Button } from '../ui/button';
+import { Link } from 'react-router';
 
 export function AppHeader() {
   const { theme, toggleTheme } = useThemeToggle();
 
-  const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
 
   return (
     <header className="flex items-center justify-between px-4 border-b h-14 bg-card border-border">
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">🐳</span>
-        <p className="text-xl font-semibold text-card-foreground">
-          Docker Control Plane
-        </p>
-      </div>
+      <Link to="/">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">🐳</span>
+          <p className="text-xl font-semibold text-card-foreground">
+            Docker Control Plane
+          </p>
+        </div>
+      </Link>
+
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"

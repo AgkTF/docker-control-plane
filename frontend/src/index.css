@@ -27,92 +27,92 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.208 0.016 262);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.923 0.004 264);
-  --secondary-foreground: oklch(0.208 0.016 262);
-  --muted: oklch(0.923 0.004 264);
-  --muted-foreground: oklch(0.556 0.016 264);
-  --accent: oklch(37.3% 0.034 259.733);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --input: oklch(0.885 0.005 264);
-  --border: oklch(0.923 0.004 264);
-  --ring: oklch(37.3% 0.034 259.733);
-  --success: oklch(0.627 0.194 163);
-  --warning: oklch(0.769 0.188 70);
-  --error: oklch(0.577 0.245 27.325);
+  --background: theme(colors.gray.100);
+  --foreground: theme(colors.gray.950);
+  --card: theme(colors.gray.50);
+  --card-foreground: theme(colors.gray.950);
+  --popover: theme(colors.gray.50);
+  --popover-foreground: theme(colors.gray.950);
+  --primary: theme(colors.gray.900);
+  --primary-foreground: theme(colors.gray.50);
+  --secondary: theme(colors.gray.100);
+  --secondary-foreground: theme(colors.gray.900);
+  --muted: theme(colors.gray.100);
+  --muted-foreground: theme(colors.gray.500);
+  --accent: theme(colors.gray.800);
+  --accent-foreground: theme(colors.gray.50);
+  --destructive: theme(colors.red.500);
+  --input: theme(colors.gray.200);
+  --border: theme(colors.gray.200);
+  --ring: theme(colors.gray.800);
+  --success: theme(colors.green.600);
+  --warning: theme(colors.amber.500);
+  --error: theme(colors.red.600);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(0.135 0.014 264);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.208 0.016 262);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.208 0.016 262);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.97 0.002 264);
-    --primary-foreground: oklch(0.208 0.016 262);
-    --secondary: oklch(0.274 0.016 261);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.274 0.016 261);
-    --muted-foreground: oklch(0.708 0.016 264);
-    --accent: oklch(37.3% 0.034 259.733);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.64 0.2 357);
-    --input: oklch(0.274 0.016 261);
-    --border: oklch(0.274 0.016 261);
-    --ring: oklch(37.3% 0.034 259.733);
+    --background: theme(colors.gray.950);
+    --foreground: theme(colors.gray.50);
+    --card: theme(colors.gray.900);
+    --card-foreground: theme(colors.gray.50);
+    --popover: theme(colors.gray.900);
+    --popover-foreground: theme(colors.gray.50);
+    --primary: theme(colors.gray.100);
+    --primary-foreground: theme(colors.gray.950);
+    --secondary: theme(colors.gray.800);
+    --secondary-foreground: theme(colors.gray.50);
+    --muted: theme(colors.gray.800);
+    --muted-foreground: theme(colors.gray.400);
+    --accent: theme(colors.gray.700);
+    --accent-foreground: theme(colors.gray.50);
+    --destructive: theme(colors.red.500);
+    --input: theme(colors.gray.800);
+    --border: theme(colors.gray.800);
+    --ring: theme(colors.gray.700);
   }
 }
 
 .dark {
-  --background: oklch(0.135 0.014 264);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.208 0.016 262);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.208 0.016 262);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.97 0.002 264);
-  --primary-foreground: oklch(0.208 0.016 262);
-  --secondary: oklch(0.274 0.016 261);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.016 261);
-  --muted-foreground: oklch(0.708 0.016 264);
-  --accent: oklch(37.3% 0.034 259.733);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.64 0.2 357);
-  --input: oklch(0.274 0.016 261);
-  --border: oklch(0.274 0.016 261);
-  --ring: oklch(37.3% 0.034 259.733);
+  --background: theme(colors.gray.950);
+  --foreground: theme(colors.gray.50);
+  --card: theme(colors.gray.900);
+  --card-foreground: theme(colors.gray.50);
+  --popover: theme(colors.gray.900);
+  --popover-foreground: theme(colors.gray.50);
+  --primary: theme(colors.gray.100);
+  --primary-foreground: theme(colors.gray.950);
+  --secondary: theme(colors.gray.800);
+  --secondary-foreground: theme(colors.gray.50);
+  --muted: theme(colors.gray.800);
+  --muted-foreground: theme(colors.gray.400);
+  --accent: theme(colors.gray.700);
+  --accent-foreground: theme(colors.gray.50);
+  --destructive: theme(colors.red.500);
+  --input: theme(colors.gray.800);
+  --border: theme(colors.gray.800);
+  --ring: theme(colors.gray.700);
 }
 
 .light {
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.208 0.016 262);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.923 0.004 264);
-  --secondary-foreground: oklch(0.208 0.016 262);
-  --muted: oklch(0.923 0.004 264);
-  --muted-foreground: oklch(0.556 0.016 264);
-  --accent: oklch(37.3% 0.034 259.733);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --input: oklch(0.885 0.005 264);
-  --border: oklch(0.923 0.004 264);
-  --ring: oklch(37.3% 0.034 259.733);
+  --background: theme(colors.gray.100);
+  --foreground: theme(colors.gray.950);
+  --card: theme(colors.gray.50);
+  --card-foreground: theme(colors.gray.950);
+  --popover: theme(colors.gray.50);
+  --popover-foreground: theme(colors.gray.950);
+  --primary: theme(colors.gray.900);
+  --primary-foreground: theme(colors.gray.50);
+  --secondary: theme(colors.gray.100);
+  --secondary-foreground: theme(colors.gray.900);
+  --muted: theme(colors.gray.100);
+  --muted-foreground: theme(colors.gray.500);
+  --accent: theme(colors.gray.800);
+  --accent-foreground: theme(colors.gray.50);
+  --destructive: theme(colors.red.500);
+  --input: theme(colors.gray.200);
+  --border: theme(colors.gray.200);
+  --ring: theme(colors.gray.800);
 }
 
 @layer base {

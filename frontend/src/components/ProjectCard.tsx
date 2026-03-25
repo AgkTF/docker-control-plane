@@ -33,7 +33,7 @@ export function ProjectCard({ project, onRemove }: ProjectCardProps) {
             <Link to={`/projects/${project.id}`}>View Containers</Link>
           </Button>
           <Button
-            variant="destructive"
+            variant="destructiveOutline"
             size="sm"
             onClick={() => onRemove(project.id)}
           >
