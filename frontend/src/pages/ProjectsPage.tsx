@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, FolderOpen, Eye } from 'lucide-react';
+import { Plus, FolderOpen } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   useProjects,
   useCreateProject,
@@ -7,8 +8,17 @@ import {
 } from '../hooks/useProjects';
 import { ProjectCard } from '../components/ProjectCard';
 import { AddProjectModal } from '../components/AddProjectModal';
-import { ToastContainer, type Toast } from '../components/Toast';
 import { Button } from '../components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 
 interface ProjectsPageProps {
   onProjectSelect?: (projectId: string) => void;
@@ -16,43 +26,40 @@ interface ProjectsPageProps {
 
 export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [projectToRemove, setProjectToRemove] = useState<string | null>(null);
 
   const { data: projects, isLoading, error } = useProjects();
   const createProject = useCreateProject();
   const deleteProject = useDeleteProject();
 
-  const addToast = (type: Toast['type'], message: string) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts(prev => [...prev, { id, type, message }]);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  };
-
   const handleAddProject = async (path: string) => {
     try {
       await createProject.mutateAsync({ path });
-      addToast('success', 'Project added successfully');
+      toast.success('Project added successfully');
       setIsModalOpen(false);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to add project';
-      addToast('error', message);
+      toast.error(message);
     }
   };
 
   const handleRemoveProject = async (id: string) => {
-    if (!confirm('Are you sure you want to remove this project?')) return;
+    setProjectToRemove(id);
+  };
+
+  const confirmRemoveProject = async () => {
+    if (!projectToRemove) return;
 
     try {
-      await deleteProject.mutateAsync(id);
-      addToast('success', 'Project removed successfully');
+      await deleteProject.mutateAsync(projectToRemove);
+      toast.success('Project removed successfully');
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to remove project';
-      addToast('error', message);
+      toast.error(message);
+    } finally {
+      setProjectToRemove(null);
     }
   };
 
@@ -90,24 +97,14 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
           </div>
         </div>
       ) : projects && projects.length > 0 ? (
-        <div className="grid gap-4">
-          {projects.map(project => (
-            <div key={project.id} className="bg-card border border-border rounded-lg p-4">
-              <ProjectCard
-                project={project}
-                onRemove={handleRemoveProject}
-              />
-              <div className="mt-3 flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleViewProject(project.id)}
-                >
-                  <Eye className="w-4 h-4" />
-                  View Containers
-                </Button>
-              </div>
-            </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onRemove={handleRemoveProject}
+              onViewContainers={handleViewProject}
+            />
           ))}
         </div>
       ) : (
@@ -136,7 +133,27 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
         isSubmitting={createProject.isPending}
       />
 
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <AlertDialog
+        open={!!projectToRemove}
+        onOpenChange={(open) => !open && setProjectToRemove(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this project? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProjectToRemove(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemoveProject}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
