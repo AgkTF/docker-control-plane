@@ -1,109 +1,127 @@
-import { useState } from 'react';
-import { ArrowLeft, FolderOpen, Trash2, AlertTriangle } from 'lucide-react';
-import { useProject, useContainers, useDeleteProject, useStartContainer, useStopContainer, useRestartContainer } from '../hooks/useContainers';
-import { ContainerTable } from '../components/containers/ContainerTable';
-import { ToastContainer, type Toast } from '../components/Toast';
-import { Button } from '../components/ui/button';
+import { useState } from "react";
+import { ArrowLeft, FolderOpen, Trash2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+import {
+  useProject,
+  useContainers,
+  useDeleteProject,
+  useStartContainer,
+  useStopContainer,
+  useRestartContainer,
+} from "../hooks/useContainers";
+import { ContainerTable } from "../components/containers/ContainerTable";
+import { Button } from "../components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
 
 interface ProjectDetailPageProps {
   projectId: string;
   onBack: () => void;
 }
 
-export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+export function ProjectDetailPage({
+  projectId,
+  onBack,
+}: ProjectDetailPageProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const { data: project, isLoading: projectLoading, error: projectError } = useProject(projectId);
-  const { data: containers, isLoading: containersLoading } = useContainers(projectId);
+  const {
+    data: project,
+    isLoading: projectLoading,
+    error: projectError,
+  } = useProject(projectId);
+  const { data: containers, isLoading: containersLoading } =
+    useContainers(projectId);
   const deleteProject = useDeleteProject();
   const startContainer = useStartContainer(projectId);
   const stopContainer = useStopContainer(projectId);
   const restartContainer = useRestartContainer(projectId);
 
-  const addToast = (type: Toast['type'], message: string) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, type, message }]);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-
   const handleDeleteProject = async () => {
     try {
       await deleteProject.mutateAsync(projectId);
-      addToast('success', 'Project removed successfully');
+      toast.success("Project removed successfully");
       setShowDeleteConfirm(false);
       onBack();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to remove project';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : "Failed to remove project";
+      toast.error(message);
     }
   };
 
   const handleStartContainer = async (containerId: string) => {
     try {
       await startContainer.mutateAsync(containerId);
-      addToast('success', 'Container started successfully');
+      toast.success("Container started successfully");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start container';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : "Failed to start container";
+      toast.error(message);
     }
   };
 
   const handleStopContainer = async (containerId: string) => {
     try {
       await stopContainer.mutateAsync(containerId);
-      addToast('success', 'Container stopped successfully');
+      toast.success("Container stopped successfully");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to stop container';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : "Failed to stop container";
+      toast.error(message);
     }
   };
 
   const handleRestartContainer = async (containerId: string) => {
     try {
       await restartContainer.mutateAsync(containerId);
-      addToast('success', 'Container restarted successfully');
+      toast.success("Container restarted successfully");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to restart container';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : "Failed to restart container";
+      toast.error(message);
     }
   };
 
-  const isActionPending = startContainer.isPending || stopContainer.isPending || restartContainer.isPending;
+  const isActionPending =
+    startContainer.isPending ||
+    stopContainer.isPending ||
+    restartContainer.isPending;
 
   if (projectLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">Loading project...</div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading project...</div>
       </div>
     );
   }
 
   if (projectError || !project) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
-        <div className="text-red-500">
-          {projectError?.message || 'Failed to load project'}
+      <div className="flex items-center justify-center h-64">
+        <div className="text-destructive">
+          {projectError?.message || "Failed to load project"}
         </div>
       </div>
     );
   }
 
-  const runningCount = containers?.filter((c) => c.state === 'running').length ?? 0;
+  const runningCount =
+    containers?.filter((c) => c.state === "running").length ?? 0;
   const totalCount = containers?.length ?? 0;
 
   return (
     <div className="px-4 py-8 mx-auto max-w-7xl md:px-6 lg:px-8">
       <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="mb-4"
-        >
+        <Button variant="ghost" size="sm" onClick={onBack} className="mb-4">
           <ArrowLeft className="w-4 h-4" />
           Back to Projects
         </Button>
@@ -126,7 +144,8 @@ export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps)
               <span className="font-mono text-sm">{project.path}</span>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {project.compose_file} • {totalCount} containers
+              {project.compose_file} • {totalCount} container
+              {totalCount !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -156,20 +175,19 @@ export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps)
             <p className="font-medium">Compose file missing</p>
           </div>
           <p className="text-sm text-warning/80 mt-1">
-            The compose file was moved or deleted. Containers will still be displayed if they exist.
+            The compose file was moved or deleted. Containers will still be
+            displayed if they exist.
           </p>
         </div>
       )}
 
       <div className="bg-card border border-border rounded-lg">
         <div className="px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-medium text-foreground">
-            Containers
-          </h2>
+          <h2 className="text-lg font-medium text-foreground">Containers</h2>
           <p className="text-sm text-muted-foreground">
             {containersLoading
-              ? 'Loading containers...'
-              : `${totalCount} container${totalCount !== 1 ? 's' : ''}`}
+              ? "Loading containers..."
+              : `${totalCount} container${totalCount !== 1 ? "s" : ""}`}
           </p>
         </div>
         <div className="p-6">
@@ -178,8 +196,8 @@ export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps)
               Loading containers...
             </div>
           ) : (
-            <ContainerTable 
-              containers={containers ?? []} 
+            <ContainerTable
+              containers={containers ?? []}
               onStart={handleStartContainer}
               onStop={handleStopContainer}
               onRestart={handleRestartContainer}
@@ -189,40 +207,29 @@ export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps)
         </div>
       </div>
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg shadow-xl max-w-md w-full border border-border">
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-2">
-                Remove Project
-              </h2>
-              <p className="text-muted-foreground">
-                Are you sure you want to remove "{project.name}"?
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                This will only remove it from the list. Containers will not be stopped or deleted.
-              </p>
-              <div className="flex justify-end gap-3 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteProject}
-                  disabled={deleteProject.isPending}
-                >
-                  {deleteProject.isPending ? 'Removing...' : 'Remove'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <AlertDialog
+        open={showDeleteConfirm}
+        onOpenChange={(open) => !open && setShowDeleteConfirm(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove &quot;{project.name}&quot;? This
+              will only remove it from the list. Containers will not be stopped
+              or deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProject}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
