@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
-import { AppLayout } from './components/layout/AppLayout';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { ProjectDetailPage } from './pages/ProjectDetailPage';
+import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { AppLayout } from "./components/layout/AppLayout";
+import { ProjectsPage } from "./pages/ProjectsPage";
+import { ProjectDetailPage } from "./pages/ProjectDetailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,38 +15,40 @@ const queryClient = new QueryClient({
   },
 });
 
-type Route = { type: 'projects' } | { type: 'project'; projectId: string };
+type Route = { type: "projects" } | { type: "project"; projectId: string };
 
 function App() {
-  const [route, setRoute] = useState<Route>({ type: 'projects' });
+  const [route, setRoute] = useState<Route>({ type: "projects" });
 
   const navigateToProjects = () => {
-    setRoute({ type: 'projects' });
+    setRoute({ type: "projects" });
   };
 
   const navigateToProject = (projectId: string) => {
-    setRoute({ type: 'project', projectId });
+    setRoute({ type: "project", projectId });
   };
 
   const selectedProjectId =
-    route.type === 'project' ? route.projectId : undefined;
+    route.type === "project" ? route.projectId : undefined;
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster richColors />
-      <AppLayout
-        selectedProjectId={selectedProjectId}
-        onProjectSelect={navigateToProject}
-      >
-        {route.type === 'projects' ? (
-          <ProjectsPage onProjectSelect={navigateToProject} />
-        ) : (
-          <ProjectDetailPage
-            projectId={route.projectId}
-            onBack={navigateToProjects}
-          />
-        )}
-      </AppLayout>
+      <ThemeProvider>
+        <Toaster richColors />
+        <AppLayout
+          selectedProjectId={selectedProjectId}
+          onProjectSelect={navigateToProject}
+        >
+          {route.type === "projects" ? (
+            <ProjectsPage onProjectSelect={navigateToProject} />
+          ) : (
+            <ProjectDetailPage
+              projectId={route.projectId}
+              onBack={navigateToProjects}
+            />
+          )}
+        </AppLayout>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -1,14 +1,15 @@
-import { useState } from 'react';
-import { Plus, FolderOpen } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Plus, FolderOpen } from "lucide-react";
+import { toast } from "sonner";
 import {
   useProjects,
   useCreateProject,
   useDeleteProject,
-} from '../hooks/useProjects';
-import { ProjectCard } from '../components/ProjectCard';
-import { AddProjectModal } from '../components/AddProjectModal';
-import { Button } from '../components/ui/button';
+} from "../hooks/useProjects";
+import { ProjectCard } from "../components/ProjectCard";
+import { AddProjectModal } from "../components/AddProjectModal";
+import { ProjectsPageSkeleton } from "../components/skeletons/ProjectSkeletons";
+import { Button } from "../components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../components/ui/alert-dialog';
+} from "../components/ui/alert-dialog";
 
 interface ProjectsPageProps {
   onProjectSelect?: (projectId: string) => void;
@@ -35,11 +36,11 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
   const handleAddProject = async (path: string) => {
     try {
       await createProject.mutateAsync({ path });
-      toast.success('Project added successfully');
+      toast.success("Project added successfully");
       setIsModalOpen(false);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Failed to add project';
+        err instanceof Error ? err.message : "Failed to add project";
       toast.error(message);
     }
   };
@@ -53,10 +54,10 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
 
     try {
       await deleteProject.mutateAsync(projectToRemove);
-      toast.success('Project removed successfully');
+      toast.success("Project removed successfully");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Failed to remove project';
+        err instanceof Error ? err.message : "Failed to remove project";
       toast.error(message);
     } finally {
       setProjectToRemove(null);
@@ -72,24 +73,15 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
   return (
     <div className="px-4 py-8 mx-auto max-w-7xl md:px-6 lg:px-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-foreground">
-          Projects
-        </h2>
-        <Button
-          variant="default"
-          onClick={() => setIsModalOpen(true)}
-        >
+        <h2 className="text-2xl font-semibold text-foreground">Projects</h2>
+        <Button variant="default" onClick={() => setIsModalOpen(true)}>
           <Plus className="w-4 h-4" />
           Add Project
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">
-            Loading projects...
-          </div>
-        </div>
+        <ProjectsPageSkeleton />
       ) : error ? (
         <div className="flex items-center justify-center h-64">
           <div className="text-destructive">
@@ -116,10 +108,7 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
           <p className="mb-4 text-muted-foreground">
             Add your first Docker Compose project to get started
           </p>
-          <Button
-            variant="default"
-            onClick={() => setIsModalOpen(true)}
-          >
+          <Button variant="default" onClick={() => setIsModalOpen(true)}>
             <Plus className="w-4 h-4" />
             Add Project
           </Button>
@@ -141,7 +130,8 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Project</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove this project? This action cannot be undone.
+              Are you sure you want to remove this project? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

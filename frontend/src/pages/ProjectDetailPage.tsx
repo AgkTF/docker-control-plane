@@ -10,6 +10,10 @@ import {
   useRestartContainer,
 } from "../hooks/useContainers";
 import { ContainerTable } from "../components/containers/ContainerTable";
+import {
+  ContainerTableSkeleton,
+  ProjectDetailHeaderSkeleton,
+} from "../components/skeletons/ContainerSkeletons";
 import { Button } from "../components/ui/button";
 import {
   AlertDialog,
@@ -98,8 +102,19 @@ export function ProjectDetailPage({
 
   if (projectLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading project...</div>
+      <div className="px-4 py-8 mx-auto max-w-7xl md:px-6 lg:px-8">
+        <ProjectDetailHeaderSkeleton />
+        <div className="bg-card border border-border rounded-lg">
+          <div className="px-6 py-4 border-b border-border">
+            <h2 className="text-lg font-medium text-foreground">Containers</h2>
+            <p className="text-sm text-muted-foreground">
+              Loading containers...
+            </p>
+          </div>
+          <div className="p-6">
+            <ContainerTableSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
@@ -192,9 +207,7 @@ export function ProjectDetailPage({
         </div>
         <div className="p-6">
           {containersLoading ? (
-            <div className="text-center py-12 text-muted-foreground">
-              Loading containers...
-            </div>
+            <ContainerTableSkeleton />
           ) : (
             <ContainerTable
               containers={containers ?? []}
