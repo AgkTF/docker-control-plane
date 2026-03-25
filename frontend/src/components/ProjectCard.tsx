@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { Trash2 } from 'lucide-react';
 import type { Project } from '../api/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -7,14 +8,9 @@ import { Button } from './ui/button';
 interface ProjectCardProps {
   project: Project;
   onRemove: (id: string) => void;
-  onViewContainers: (id: string) => void;
 }
 
-export function ProjectCard({
-  project,
-  onRemove,
-  onViewContainers,
-}: ProjectCardProps) {
+export function ProjectCard({ project, onRemove }: ProjectCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -33,12 +29,8 @@ export function ProjectCard({
           <Badge variant="secondary">{project.compose_file}</Badge>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewContainers(project.id)}
-          >
-            View Containers
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/projects/${project.id}`}>View Containers</Link>
           </Button>
           <Button
             variant="destructive"

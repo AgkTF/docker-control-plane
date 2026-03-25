@@ -21,11 +21,7 @@ import {
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
 
-interface ProjectsPageProps {
-  onProjectSelect?: (projectId: string) => void;
-}
-
-export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
+export function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectToRemove, setProjectToRemove] = useState<string | null>(null);
 
@@ -64,12 +60,6 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
     }
   };
 
-  const handleViewProject = (id: string) => {
-    if (onProjectSelect) {
-      onProjectSelect(id);
-    }
-  };
-
   return (
     <div className="px-4 py-8 mx-auto max-w-7xl md:px-6 lg:px-8">
       <div className="flex items-center justify-between mb-6">
@@ -95,7 +85,6 @@ export function ProjectsPage({ onProjectSelect }: ProjectsPageProps) {
               key={project.id}
               project={project}
               onRemove={handleRemoveProject}
-              onViewContainers={handleViewProject}
             />
           ))}
         </div>

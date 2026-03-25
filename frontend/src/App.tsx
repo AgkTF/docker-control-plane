@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -15,39 +15,20 @@ const queryClient = new QueryClient({
   },
 });
 
-type Route = { type: "projects" } | { type: "project"; projectId: string };
-
 function App() {
-  const [route, setRoute] = useState<Route>({ type: "projects" });
-
-  const navigateToProjects = () => {
-    setRoute({ type: "projects" });
-  };
-
-  const navigateToProject = (projectId: string) => {
-    setRoute({ type: "project", projectId });
-  };
-
-  const selectedProjectId =
-    route.type === "project" ? route.projectId : undefined;
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <Toaster richColors />
-        <AppLayout
-          selectedProjectId={selectedProjectId}
-          onProjectSelect={navigateToProject}
-        >
-          {route.type === "projects" ? (
-            <ProjectsPage onProjectSelect={navigateToProject} />
-          ) : (
-            <ProjectDetailPage
-              projectId={route.projectId}
-              onBack={navigateToProjects}
-            />
-          )}
-        </AppLayout>
+        <BrowserRouter>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Navigate to="/projects" replace />} />
+              <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
+            </Routes>
+          </AppLayout>
+        </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { NavLink } from 'react-router';
+import {
+  FolderOpen,
+  FolderClosed,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { useProjects } from '../../hooks/useProjects';
 import { Button } from '../ui/button';
 import type { Project } from '../../api/types';
 
-interface AppSidebarProps {
-  selectedProjectId?: string;
-  onProjectSelect: (projectId: string) => void;
-}
-
-export function AppSidebar({
-  selectedProjectId,
-  onProjectSelect,
-}: AppSidebarProps) {
+export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { data: projects, isLoading } = useProjects();
 
@@ -50,20 +48,30 @@ export function AppSidebar({
           <ul className="space-y-1">
             {projects.map((project: Project) => (
               <li key={project.id}>
-                <button
-                  onClick={() => onProjectSelect(project.id)}
-                  className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors ${
-                    selectedProjectId === project.id
-                      ? 'bg-accent text-accent-foreground'
-                      : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
-                  } ${isCollapsed ? 'justify-center px-0' : ''}`}
+                <NavLink
+                  to={`/projects/${project.id}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors ${
+                      isActive
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
+                    } ${isCollapsed ? 'justify-center px-0' : ''}`
+                  }
                   title={isCollapsed ? project.name : undefined}
                 >
-                  <FolderOpen className="w-4 h-4 shrink-0" />
-                  {!isCollapsed && (
-                    <span className="truncate">{project.name}</span>
+                  {({ isActive }) => (
+                    <>
+                      {isActive ? (
+                        <FolderOpen className="w-4 h-4 shrink-0" />
+                      ) : (
+                        <FolderClosed className="w-4 h-4 shrink-0" />
+                      )}
+                      {!isCollapsed && (
+                        <span className="truncate">{project.name}</span>
+                      )}
+                    </>
                   )}
-                </button>
+                </NavLink>
               </li>
             ))}
           </ul>
