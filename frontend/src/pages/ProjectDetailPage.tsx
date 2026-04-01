@@ -1,246 +1,254 @@
 import { useState } from 'react';
 import { ArrowLeft, FolderOpen, Trash2, AlertTriangle } from 'lucide-react';
-import { useProject, useContainers, useDeleteProject, useStartContainer, useStopContainer, useRestartContainer } from '../hooks/useContainers';
+import { Link, useParams, useNavigate } from 'react-router';
+import { toast } from 'sonner';
+import {
+  useProject,
+  useContainers,
+  useDeleteProject,
+  useStartContainer,
+  useStopContainer,
+  useRestartContainer,
+} from '../hooks/useContainers';
 import { ContainerTable } from '../components/containers/ContainerTable';
-import { ToastContainer, type Toast } from '../components/Toast';
+import {
+  ContainerTableSkeleton,
+  ProjectDetailHeaderSkeleton,
+} from '../components/skeletons/ContainerSkeletons';
+import { Button } from '../components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 
-interface ProjectDetailPageProps {
-  projectId: string;
-  onBack: () => void;
-}
-
-export function ProjectDetailPage({ projectId, onBack }: ProjectDetailPageProps) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
+export function ProjectDetailPage() {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const { data: project, isLoading: projectLoading, error: projectError } = useProject(projectId);
-  const { data: containers, isLoading: containersLoading } = useContainers(projectId);
+  const {
+    data: project,
+    isLoading: projectLoading,
+    error: projectError,
+  } = useProject(projectId ?? '');
+  const { data: containers, isLoading: containersLoading } = useContainers(
+    projectId ?? '',
+  );
   const deleteProject = useDeleteProject();
-  const startContainer = useStartContainer(projectId);
-  const stopContainer = useStopContainer(projectId);
-  const restartContainer = useRestartContainer(projectId);
+  const startContainer = useStartContainer(projectId ?? '');
+  const stopContainer = useStopContainer(projectId ?? '');
+  const restartContainer = useRestartContainer(projectId ?? '');
 
-  const addToast = (type: Toast['type'], message: string) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, type, message }]);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  if (!projectId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-destructive">Project ID is required</div>
+      </div>
+    );
+  }
 
   const handleDeleteProject = async () => {
     try {
       await deleteProject.mutateAsync(projectId);
-      addToast('success', 'Project removed successfully');
+      toast.success('Project removed successfully');
       setShowDeleteConfirm(false);
-      onBack();
+      navigate('/projects');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to remove project';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : 'Failed to remove project';
+      toast.error(message);
     }
   };
 
   const handleStartContainer = async (containerId: string) => {
     try {
       await startContainer.mutateAsync(containerId);
-      addToast('success', 'Container started successfully');
+      toast.success('Container started successfully');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start container';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : 'Failed to start container';
+      toast.error(message);
     }
   };
 
   const handleStopContainer = async (containerId: string) => {
     try {
       await stopContainer.mutateAsync(containerId);
-      addToast('success', 'Container stopped successfully');
+      toast.success('Container stopped successfully');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to stop container';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : 'Failed to stop container';
+      toast.error(message);
     }
   };
 
   const handleRestartContainer = async (containerId: string) => {
     try {
       await restartContainer.mutateAsync(containerId);
-      addToast('success', 'Container restarted successfully');
+      toast.success('Container restarted successfully');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to restart container';
-      addToast('error', message);
+      const message =
+        err instanceof Error ? err.message : 'Failed to restart container';
+      toast.error(message);
     }
   };
 
-  const isActionPending = startContainer.isPending || stopContainer.isPending || restartContainer.isPending;
+  const isActionPending =
+    startContainer.isPending ||
+    stopContainer.isPending ||
+    restartContainer.isPending;
 
   if (projectLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">Loading project...</div>
+      <div className="px-4 py-8 mx-auto max-w-7xl md:px-6 lg:px-8">
+        <ProjectDetailHeaderSkeleton />
+        <div className="border rounded-lg bg-card border-border">
+          <div className="px-6 py-4 border-b border-border">
+            <h2 className="text-lg font-medium text-foreground">Containers</h2>
+            <p className="text-sm text-muted-foreground">
+              Loading containers...
+            </p>
+          </div>
+          <div className="p-6">
+            <ContainerTableSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (projectError || !project) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center">
-        <div className="text-red-500">
+      <div className="flex items-center justify-center h-64">
+        <div className="text-destructive">
           {projectError?.message || 'Failed to load project'}
         </div>
       </div>
     );
   }
 
-  const runningCount = containers?.filter((c) => c.state === 'running').length ?? 0;
+  const runningCount =
+    containers?.filter(c => c.state === 'running').length ?? 0;
   const totalCount = containers?.length ?? 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 bg-white border-b border-gray-200 h-14 dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🐳</span>
-          <p className="text-xl font-semibold text-gray-900 dark:text-white">
-            Docker Control Plane
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-          <span className="text-gray-600 dark:text-gray-400">Connected</span>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="px-4 py-8 mx-auto max-w-7xl md:px-6 lg:px-8">
-        {/* Back Button & Title */}
-        <div className="mb-6">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors mb-4"
-          >
+    <div className="px-4 py-8 mx-auto max-w-7xl md:px-6 lg:px-8">
+      <div className="mb-6">
+        <Button variant="ghost" size="sm" asChild className="mb-4">
+          <Link to="/projects">
             <ArrowLeft className="w-4 h-4" />
             Back to Projects
-          </button>
+          </Link>
+        </Button>
 
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                  {project.name}
-                </h1>
-                {project.has_missing_compose && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                    <AlertTriangle className="w-3 h-3" />
-                    Compose Missing
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <FolderOpen className="w-4 h-4" />
-                <span className="font-mono text-sm">{project.path}</span>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {project.compose_file} • {totalCount} containers
-              </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-semibold text-foreground">
+                {project.name}
+              </h1>
+              {project.has_missing_compose && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-warning/20 text-warning">
+                  <AlertTriangle className="w-3 h-3" />
+                  Compose Missing
+                </span>
+              )}
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Running</p>
-                <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {runningCount}/{totalCount}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-              >
-                <Trash2 className="w-4 h-4" />
-                Remove
-              </button>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <FolderOpen className="w-4 h-4" />
+              <span className="font-mono text-sm">{project.path}</span>
             </div>
-          </div>
-        </div>
-
-        {/* Missing Compose Warning */}
-        {project.has_missing_compose && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
-            <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
-              <AlertTriangle className="w-5 h-5" />
-              <p className="font-medium">Compose file missing</p>
-            </div>
-            <p className="text-sm text-yellow-600 dark:text-yellow-500 mt-1">
-              The compose file was moved or deleted. Containers will still be displayed if they exist.
+            <p className="mt-1 text-sm text-muted-foreground">
+              {project.compose_file} • {totalCount} container
+              {totalCount !== 1 ? 's' : ''}
             </p>
           </div>
-        )}
 
-        {/* Containers Section */}
-        <div className="bg-white border border-gray-200 rounded-lg dark:border-slate-700 dark:bg-slate-900">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-              Containers
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {containersLoading
-                ? 'Loading containers...'
-                : `${totalCount} container${totalCount !== 1 ? 's' : ''}`}
-            </p>
-          </div>
-          <div className="p-6">
-            {containersLoading ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                Loading containers...
-              </div>
-            ) : (
-              <ContainerTable 
-                containers={containers ?? []} 
-                onStart={handleStartContainer}
-                onStop={handleStopContainer}
-                onRestart={handleRestartContainer}
-                isActionPending={isActionPending}
-              />
-            )}
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Running</p>
+              <p className="text-xl font-semibold text-foreground">
+                {runningCount}/{totalCount}
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="w-4 h-4" />
+              Remove
+            </Button>
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full dark:bg-slate-900 dark:border dark:border-slate-700">
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Remove Project
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Are you sure you want to remove "{project.name}"?
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                This will only remove it from the list. Containers will not be stopped or deleted.
-              </p>
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteProject}
-                  disabled={deleteProject.isPending}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {deleteProject.isPending ? 'Removing...' : 'Remove'}
-                </button>
-              </div>
-            </div>
+      {project.has_missing_compose && (
+        <div className="p-4 mb-6 border rounded-lg bg-warning/10 border-warning/30">
+          <div className="flex items-center gap-2 text-warning">
+            <AlertTriangle className="w-5 h-5" />
+            <p className="font-medium">Compose file missing</p>
           </div>
+          <p className="mt-1 text-sm text-warning/80">
+            The compose file was moved or deleted. Containers will still be
+            displayed if they exist.
+          </p>
         </div>
       )}
 
-      {/* Toast Notifications */}
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <div className="border rounded-lg bg-card border-border">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-lg font-medium text-foreground">Containers</h2>
+          <p className="text-sm text-muted-foreground">
+            {containersLoading
+              ? 'Loading containers...'
+              : `${totalCount} container${totalCount !== 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <div className="p-6">
+          {containersLoading ? (
+            <ContainerTableSkeleton />
+          ) : (
+            <ContainerTable
+              containers={containers ?? []}
+              onStart={handleStartContainer}
+              onStop={handleStopContainer}
+              onRestart={handleRestartContainer}
+              isActionPending={isActionPending}
+            />
+          )}
+        </div>
+      </div>
+
+      <AlertDialog
+        open={showDeleteConfirm}
+        onOpenChange={open => !open && setShowDeleteConfirm(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove &quot;{project.name}&quot;? This
+              will only remove it from the list. Containers will not be stopped
+              or deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProject}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

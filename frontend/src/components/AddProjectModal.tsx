@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
-import { X, Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Button } from './ui/button';
 
 interface AddProjectModalProps {
   isOpen: boolean;
@@ -21,7 +32,6 @@ export function AddProjectModal({
     composeFile?: string;
   }>({ status: 'idle', message: '' });
 
-  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setPath('');
@@ -29,7 +39,6 @@ export function AddProjectModal({
     }
   }, [isOpen]);
 
-  // Debounced validation
   useEffect(() => {
     if (!path.trim()) {
       setValidationState({ status: 'idle', message: '' });
@@ -50,19 +59,19 @@ export function AddProjectModal({
         if (data.data?.valid) {
           setValidationState({
             status: 'valid',
-            message: `✓ Detected: ${data.data.compose_file}`,
+            message: `Detected: ${data.data.compose_file}`,
             composeFile: data.data.compose_file,
           });
         } else {
           setValidationState({
             status: 'invalid',
-            message: `✕ ${data.data?.error || 'Validation failed'}`,
+            message: data.data?.error || 'Validation failed',
           });
         }
-      } catch (err) {
+      } catch {
         setValidationState({
           status: 'invalid',
-          message: '✕ Validation failed',
+          message: 'Validation failed',
         });
       }
     }, 500);
@@ -77,83 +86,70 @@ export function AddProjectModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl dark:bg-slate-900">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Add Project
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            disabled={isSubmitting}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="mb-4">
-            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Project Path <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={path}
-              onChange={e => setPath(e.target.value)}
-              placeholder="/path/to/project"
-              className="w-full px-3 py-2 font-mono text-sm text-gray-900 bg-white border border-gray-300 rounded dark:bg-slate-800 dark:border-slate-600 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              autoFocus
-              disabled={isSubmitting}
-            />
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Enter the directory containing your docker-compose.yml or
-              compose.yaml file
-            </p>
-          </div>
-
-          {validationState.message && (
-            <div
-              className={`flex items-center gap-2 text-sm mb-4 ${
-                validationState.status === 'valid'
-                  ? 'text-green-600 dark:text-green-400'
-                  : validationState.status === 'invalid'
-                    ? 'text-red-600 dark:text-red-400'
-                    : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              {validationState.status === 'valid' && (
-                <Check className="w-4 h-4" />
-              )}
-              {validationState.status === 'invalid' && (
-                <AlertCircle className="w-4 h-4" />
-              )}
-              <span>{validationState.message}</span>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Add Project</DialogTitle>
+            <DialogDescription>
+              Enter the directory containing your docker-compose.yml or compose.yaml file
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="project-path">
+                Project Path <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="project-path"
+                type="text"
+                value={path}
+                onChange={(e) => setPath(e.target.value)}
+                placeholder="/path/to/project"
+                autoFocus
+                disabled={isSubmitting}
+              />
             </div>
-          )}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button
+            {validationState.message && (
+              <div
+                className={`flex items-center gap-2 text-sm ${
+                  validationState.status === 'valid'
+                    ? 'text-green-600 dark:text-green-400'
+                    : validationState.status === 'invalid'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-muted-foreground'
+                }`}
+              >
+                {validationState.status === 'valid' && (
+                  <Check className="w-4 h-4" />
+                )}
+                {validationState.status === 'invalid' && (
+                  <AlertCircle className="w-4 h-4" />
+                )}
+                <span>{validationState.message}</span>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 dark:border-slate-600 dark:text-gray-200 disabled:opacity-50"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={validationState.status !== 'valid' || isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Adding...' : 'Add Project'}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

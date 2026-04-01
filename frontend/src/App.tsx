@@ -1,43 +1,35 @@
-import { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { ProjectDetailPage } from './pages/ProjectDetailPage';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { AppLayout } from "./components/layout/AppLayout";
+import { ProjectsPage } from "./pages/ProjectsPage";
+import { ProjectDetailPage } from "./pages/ProjectDetailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 30, // 30 seconds
+      staleTime: 1000 * 30,
       refetchOnWindowFocus: false,
     },
   },
 });
 
-// Simple router state
-type Route = 
-  | { type: 'projects' }
-  | { type: 'project'; projectId: string };
-
 function App() {
-  const [route, setRoute] = useState<Route>({ type: 'projects' });
-
-  const navigateToProjects = () => {
-    setRoute({ type: 'projects' });
-  };
-
-  const navigateToProject = (projectId: string) => {
-    setRoute({ type: 'project', projectId });
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
-      {route.type === 'projects' ? (
-        <ProjectsPage onProjectSelect={navigateToProject} />
-      ) : (
-        <ProjectDetailPage
-          projectId={route.projectId}
-          onBack={navigateToProjects}
-        />
-      )}
+      <ThemeProvider>
+        <Toaster richColors />
+        <BrowserRouter>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Navigate to="/projects" replace />} />
+              <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
+            </Routes>
+          </AppLayout>
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
