@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { ArrowLeft, FolderOpen, Trash2, AlertTriangle } from 'lucide-react';
-import { Link, useParams, useNavigate } from 'react-router';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { ArrowLeft, FolderOpen, Trash2, AlertTriangle } from "lucide-react";
+import { Link, useParams, useNavigate } from "react-router";
+import { toast } from "sonner";
 import {
   useProject,
   useContainers,
@@ -9,13 +9,13 @@ import {
   useStartContainer,
   useStopContainer,
   useRestartContainer,
-} from '../hooks/useContainers';
-import { ContainerTable } from '../components/containers/ContainerTable';
+} from "../hooks/useContainers";
+import { ContainerTable } from "../components/containers/ContainerTable";
 import {
   ContainerTableSkeleton,
   ProjectDetailHeaderSkeleton,
-} from '../components/skeletons/ContainerSkeletons';
-import { Button } from '../components/ui/button';
+} from "../components/skeletons/ContainerSkeletons";
+import { Button } from "../components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +25,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../components/ui/alert-dialog';
+} from "../components/ui/alert-dialog";
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -36,14 +36,14 @@ export function ProjectDetailPage() {
     data: project,
     isLoading: projectLoading,
     error: projectError,
-  } = useProject(projectId ?? '');
+  } = useProject(projectId ?? "");
   const { data: containers, isLoading: containersLoading } = useContainers(
-    projectId ?? '',
+    projectId ?? "",
   );
   const deleteProject = useDeleteProject();
-  const startContainer = useStartContainer(projectId ?? '');
-  const stopContainer = useStopContainer(projectId ?? '');
-  const restartContainer = useRestartContainer(projectId ?? '');
+  const startContainer = useStartContainer(projectId ?? "");
+  const stopContainer = useStopContainer(projectId ?? "");
+  const restartContainer = useRestartContainer(projectId ?? "");
 
   if (!projectId) {
     return (
@@ -56,12 +56,12 @@ export function ProjectDetailPage() {
   const handleDeleteProject = async () => {
     try {
       await deleteProject.mutateAsync(projectId);
-      toast.success('Project removed successfully');
+      toast.success("Project removed successfully");
       setShowDeleteConfirm(false);
-      navigate('/projects');
+      navigate("/projects");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Failed to remove project';
+        err instanceof Error ? err.message : "Failed to remove project";
       toast.error(message);
     }
   };
@@ -69,10 +69,10 @@ export function ProjectDetailPage() {
   const handleStartContainer = async (containerId: string) => {
     try {
       await startContainer.mutateAsync(containerId);
-      toast.success('Container started successfully');
+      toast.success("Container started successfully");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Failed to start container';
+        err instanceof Error ? err.message : "Failed to start container";
       toast.error(message);
     }
   };
@@ -80,10 +80,10 @@ export function ProjectDetailPage() {
   const handleStopContainer = async (containerId: string) => {
     try {
       await stopContainer.mutateAsync(containerId);
-      toast.success('Container stopped successfully');
+      toast.success("Container stopped successfully");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Failed to stop container';
+        err instanceof Error ? err.message : "Failed to stop container";
       toast.error(message);
     }
   };
@@ -91,10 +91,10 @@ export function ProjectDetailPage() {
   const handleRestartContainer = async (containerId: string) => {
     try {
       await restartContainer.mutateAsync(containerId);
-      toast.success('Container restarted successfully');
+      toast.success("Container restarted successfully");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Failed to restart container';
+        err instanceof Error ? err.message : "Failed to restart container";
       toast.error(message);
     }
   };
@@ -127,14 +127,14 @@ export function ProjectDetailPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-destructive">
-          {projectError?.message || 'Failed to load project'}
+          {projectError?.message || "Failed to load project"}
         </div>
       </div>
     );
   }
 
   const runningCount =
-    containers?.filter(c => c.state === 'running').length ?? 0;
+    containers?.filter((c) => c.state === "running").length ?? 0;
   const totalCount = containers?.length ?? 0;
 
   return (
@@ -166,7 +166,7 @@ export function ProjectDetailPage() {
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {project.compose_file} • {totalCount} container
-              {totalCount !== 1 ? 's' : ''}
+              {totalCount !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -207,8 +207,8 @@ export function ProjectDetailPage() {
           <h2 className="text-lg font-medium text-foreground">Containers</h2>
           <p className="text-sm text-muted-foreground">
             {containersLoading
-              ? 'Loading containers...'
-              : `${totalCount} container${totalCount !== 1 ? 's' : ''}`}
+              ? "Loading containers..."
+              : `${totalCount} container${totalCount !== 1 ? "s" : ""}`}
           </p>
         </div>
         <div className="p-6">
@@ -228,7 +228,7 @@ export function ProjectDetailPage() {
 
       <AlertDialog
         open={showDeleteConfirm}
-        onOpenChange={open => !open && setShowDeleteConfirm(false)}
+        onOpenChange={(open) => !open && setShowDeleteConfirm(false)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>

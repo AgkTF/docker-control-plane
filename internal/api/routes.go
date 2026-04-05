@@ -79,6 +79,12 @@ func SetupRoutes(mux *http.ServeMux, store *store.Store, dockerClient *docker.Cl
 			return
 		}
 
+		// Handle /api/containers/:id/stats
+		if strings.HasSuffix(path, "/stats") && r.Method == http.MethodGet {
+			handler.GetContainerStats(w, r)
+			return
+		}
+
 		w.WriteHeader(http.StatusNotFound)
 	})
 }

@@ -1,10 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getProject, getContainers, deleteProject, startContainer, stopContainer, restartContainer } from '../api/client';
-import type { Project, Container } from '../api/types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getProject,
+  getContainers,
+  deleteProject,
+  startContainer,
+  stopContainer,
+  restartContainer,
+} from "../api/client";
+import type { Project, Container } from "../api/types";
 
 // Query keys
-const projectsKey = 'projects';
-const containersKey = 'containers';
+const projectsKey = "projects";
+const containersKey = "containers";
 
 export function useProject(projectId: string) {
   return useQuery<Project, Error>({

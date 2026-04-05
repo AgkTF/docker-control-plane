@@ -1,9 +1,9 @@
-import { Link } from 'react-router';
-import { Trash2 } from 'lucide-react';
-import type { Project } from '../api/types';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Link } from "react-router";
+import { Trash2 } from "lucide-react";
+import type { Project } from "../api/types";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 interface ProjectCardProps {
   project: Project;

@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router';
+import { useState } from "react";
+import { NavLink } from "react-router";
 import {
   FolderOpen,
   FolderClosed,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { useProjects } from '../../hooks/useProjects';
-import { Button } from '../ui/button';
-import type { Project } from '../../api/types';
+} from "lucide-react";
+import { useProjects } from "../../hooks/useProjects";
+import { Button } from "../ui/button";
+import type { Project } from "../../api/types";
 
 export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -17,7 +17,7 @@ export function AppSidebar() {
   return (
     <aside
       className={`flex flex-col h-full bg-card border-r border-border transition-all duration-300 ${
-        isCollapsed ? 'w-16' : 'w-64'
+        isCollapsed ? "w-16" : "w-64"
       }`}
     >
       <div className="flex items-center justify-between p-3 border-b border-border">
@@ -40,9 +40,9 @@ export function AppSidebar() {
       <nav className="flex-1 p-2 overflow-y-auto">
         {isLoading ? (
           <div
-            className={`text-sm text-muted-foreground ${isCollapsed ? 'text-center' : 'px-3 py-2'}`}
+            className={`text-sm text-muted-foreground ${isCollapsed ? "text-center" : "px-3 py-2"}`}
           >
-            {isCollapsed ? '...' : 'Loading...'}
+            {isCollapsed ? "..." : "Loading..."}
           </div>
         ) : projects && projects.length > 0 ? (
           <ul className="space-y-1">
@@ -53,9 +53,9 @@ export function AppSidebar() {
                   className={({ isActive }) =>
                     `flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md transition-colors ${
                       isActive
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
-                    } ${isCollapsed ? 'justify-center px-0' : ''}`
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                    } ${isCollapsed ? "justify-center px-0" : ""}`
                   }
                   title={isCollapsed ? project.name : undefined}
                 >
@@ -77,9 +77,9 @@ export function AppSidebar() {
           </ul>
         ) : (
           <div
-            className={`text-sm text-muted-foreground ${isCollapsed ? 'text-center' : 'px-3 py-2'}`}
+            className={`text-sm text-muted-foreground ${isCollapsed ? "text-center" : "px-3 py-2"}`}
           >
-            {isCollapsed ? '—' : 'No projects'}
+            {isCollapsed ? "—" : "No projects"}
           </div>
         )}
       </nav>

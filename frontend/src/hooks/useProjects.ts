@@ -1,13 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listProjects,
   createProject,
   deleteProject,
   validatePath,
-} from '../api/client';
-import type { CreateProjectRequest } from '../api/types';
+} from "../api/client";
+import type { CreateProjectRequest } from "../api/types";
 
-const projectsKey = 'projects';
+const projectsKey = "projects";
 
 export function useProjects() {
   return useQuery({

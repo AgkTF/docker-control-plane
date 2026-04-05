@@ -53,3 +53,10 @@ type ValidatePathResponse struct {
 	Name        string `json:"name,omitempty"`
 	Error       string `json:"error,omitempty"`
 }
+
+// ContainerStats represents resource usage statistics for a container
+type ContainerStats struct {
+	CPUPercentage    float64 `json:"cpu_percentage"`
+	MemoryPercentage float64 `json:"memory_percentage"`
+	PIDs             int     `json:"pids"`
+}

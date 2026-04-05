@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -13,14 +14,14 @@ import (
 
 // Container represents a Docker container with compose-related metadata
 type Container struct {
-	ID       string        `json:"id"`
-	Name     string        `json:"name"`
-	Project  string        `json:"project"`
-	Service  string        `json:"service"`
-	Image    string        `json:"image"`
-	Status   string        `json:"status"`
-	State    string        `json:"state"`
-	Ports    []PortMapping `json:"ports"`
+	ID      string        `json:"id"`
+	Name    string        `json:"name"`
+	Project string        `json:"project"`
+	Service string        `json:"service"`
+	Image   string        `json:"image"`
+	Status  string        `json:"status"`
+	State   string        `json:"state"`
+	Ports   []PortMapping `json:"ports"`
 }
 
 // PortMapping represents a port mapping between host and container
@@ -60,7 +61,7 @@ func (c *Client) ListContainersByProject(ctx context.Context, projectName string
 	// Filter containers by compose project label
 	filterArgs := filters.NewArgs()
 	filterArgs.Add("label", fmt.Sprintf("com.docker.compose.project=%s", projectName))
-	
+
 	containers, err := c.cli.ContainerList(ctx, container.ListOptions{
 		All:     true,
 		Filters: filterArgs,
@@ -146,6 +147,50 @@ func (c *Client) GetContainer(ctx context.Context, id string) (*Container, error
 	}
 
 	return container, nil
+}
+
+// ContainerStats represents resource usage statistics for a container
+type ContainerStats struct {
+	CPUPercentage    float64 `json:"cpu_percentage"`
+	MemoryPercentage float64 `json:"memory_percentage"`
+	PIDs             int     `json:"pids"`
+}
+
+// GetStats returns resource usage statistics for a container
+func (c *Client) GetStats(ctx context.Context, containerID string) (*ContainerStats, error) {
+	stats, err := c.cli.ContainerStats(ctx, containerID, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get container stats: %w", err)
+	}
+	defer stats.Body.Close()
+
+	var statsJSON types.StatsJSON
+	if err := json.NewDecoder(stats.Body).Decode(&statsJSON); err != nil {
+		return nil, fmt.Errorf("failed to decode stats: %w", err)
+	}
+
+	// Calculate CPU percentage
+	cpuDelta := float64(statsJSON.CPUStats.CPUUsage.TotalUsage - statsJSON.PreCPUStats.CPUUsage.TotalUsage)
+	systemDelta := float64(statsJSON.CPUStats.SystemUsage - statsJSON.PreCPUStats.SystemUsage)
+	cpuPercentage := 0.0
+	if systemDelta > 0 && cpuDelta > 0 {
+		cpuPercentage = (cpuDelta / systemDelta) * float64(len(statsJSON.CPUStats.CPUUsage.PercpuUsage)) * 100.0
+	}
+
+	// Calculate memory percentage
+	memoryPercentage := 0.0
+	if statsJSON.MemoryStats.Limit > 0 {
+		memoryPercentage = float64(statsJSON.MemoryStats.Usage) / float64(statsJSON.MemoryStats.Limit) * 100.0
+	}
+
+	// Get PID count
+	pids := int(statsJSON.PidsStats.Current)
+
+	return &ContainerStats{
+		CPUPercentage:    cpuPercentage,
+		MemoryPercentage: memoryPercentage,
+		PIDs:             pids,
+	}, nil
 }
 
 // StartContainer starts a container

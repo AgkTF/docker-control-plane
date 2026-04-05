@@ -288,6 +288,32 @@ func (h *Handler) RestartContainer(w http.ResponseWriter, r *http.Request) {
 	h.sendJSON(w, http.StatusOK, map[string]string{"message": "Container restarted"})
 }
 
+func (h *Handler) GetContainerStats(w http.ResponseWriter, r *http.Request) {
+	// Extract container ID from path: /api/containers/:id/stats
+	path := r.URL.Path
+	if !strings.HasSuffix(path, "/stats") {
+		h.sendError(w, http.StatusBadRequest, "INVALID_PATH", "Invalid path")
+		return
+	}
+
+	id := path[len("/api/containers/") : len(path)-len("/stats")]
+
+	stats, err := h.dockerClient.GetStats(r.Context(), id)
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, "DOCKER_ERROR", fmt.Sprintf("Failed to get container stats: %v", err))
+		return
+	}
+
+	// Convert to API type
+	result := ContainerStats{
+		CPUPercentage:    stats.CPUPercentage,
+		MemoryPercentage: stats.MemoryPercentage,
+		PIDs:             stats.PIDs,
+	}
+
+	h.sendJSON(w, http.StatusOK, result)
+}
+
 func (h *Handler) sendJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

@@ -1,12 +1,12 @@
-import { Sun, Moon, Monitor } from 'lucide-react';
-import { useThemeToggle } from '../../contexts/ThemeContext';
-import { Button } from '../ui/button';
-import { Link } from 'react-router';
+import { Sun, Moon, Monitor } from "lucide-react";
+import { useThemeToggle } from "../../contexts/ThemeContext";
+import { Button } from "../ui/button";
+import { Link } from "react-router";
 
 export function AppHeader() {
   const { theme, toggleTheme } = useThemeToggle();
 
-  const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
+  const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
 
   return (
     <header className="flex items-center justify-between px-4 border-b h-14 bg-card border-border">
