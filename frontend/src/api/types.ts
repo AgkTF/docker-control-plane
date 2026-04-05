@@ -47,3 +47,9 @@ export interface APIResponse<T> {
     message: string;
   } | null;
 }
+
+export interface ContainerStats {
+  cpu_percentage: number;
+  memory_percentage: number;
+  pids: number;
+}
